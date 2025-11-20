@@ -9,13 +9,11 @@
 </head>
 <body>
   <div class="container">
-    <!-- Company Header -->
     <div class="company-header">
       <h2>Teamlease - Travel Expenses Statement</h2>
       <p class="address">3115 Work Avenue Campus, Ascent Building 77, Jyoti Nivas College Rd, Koramangala Industrial Layout, Koramangala, Bengaluru, Karnataka 560095</p>
     </div>
 
-    <!-- Employee Info -->
     <table class="info-table">
       <tr>
         <td><strong>Employee ID:-</strong></td>
@@ -43,18 +41,15 @@
       </tr>
     </table>
 
-    <!-- Controls -->
     <div class="controls">
       <label>Month & Year: <input type="month" id="monthYear" value="2025-11" /></label>
-      <button onclick="openExpenseModal('mobile')">+ Mobile (₹1500)</button>
+      <button onclick="openMobileModal()">+ Mobile Expense (₹1500)</button>
       <button onclick="openExpenseModal('courier')">+ Courier</button>
-      <button onclick="openExpenseModal('meals')">+ Meals (400)</button>
-      <button onclick="openExpenseModal('hotel')">+ Hotel (1500+tax)</button>
-      <button onclick="openHolidayModal()">+ Holiday/Leave</button>
+      <button onclick="openExpenseModal('meals')">+ Meals ₹400</button>
+      <button onclick="openExpenseModal('hotel')">+ Hotel Stay</button>
       <button onclick="generateER()" class="generate-btn">Generate ER</button>
     </div>
 
-    <!-- Main Table -->
     <table id="erTable" class="main-table">
       <thead>
         <tr>
@@ -88,21 +83,37 @@
       <tbody id="tableBody"></tbody>
     </table>
 
-    <!-- Declaration -->
     <div class="declaration-wrapper">
       <p class="declaration">
         I Certify that these expenses are correctly Stated and were Incurred as Necessary business expenses in the service of the company only
       </p>
     </div>
 
-    <!-- Download Button -->
     <button onclick="downloadPDF()" class="print-btn">Download PDF</button>
   </div>
 
-  <!-- Inline Modal -->
+  <!-- Mobile Modal -->
+  <div id="mobileModal" class="modal">
+    <div class="modal-content">
+      <h3>Add Mobile Expense</h3>
+      <div class="mobile-form">
+        <label>Date:</label>
+        <select id="mobileDate"></select>
+        <label>Amount (Max ₹1500):</label>
+        <input type="number" id="mobileAmount" min="1" max="1500" placeholder="Enter amount" />
+        <small>Remaining: ₹<span id="mobileRemaining">1500</span></small>
+      </div>
+      <div class="modal-actions">
+        <button onclick="closeMobileModal()" class="btn-cancel">Cancel</button>
+        <button onclick="submitMobile()" class="btn-ok">Add Expense</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Other Expense Modal -->
   <div id="inputModal" class="modal">
     <div class="modal-content">
-      <h3 id="modalTitle">Enter Details</h3>
+      <h3 id="modalTitle">Add Expense</h3>
       <div id="modalBody"></div>
       <div class="modal-actions">
         <button onclick="closeModal()" class="btn-cancel">Cancel</button>
