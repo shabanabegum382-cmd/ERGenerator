@@ -286,3 +286,7 @@ tbody tr:nth-child(even) {
   color: #991b1b;
   font-weight: bold;
 }
+/* Remove any background color from editable cells and holiday rows */
+.editable, .main-table td, .main-table tr {
+  background: white !important;
+}
