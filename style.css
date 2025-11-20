@@ -290,3 +290,13 @@ tbody tr:nth-child(even) {
 .editable, .main-table td, .main-table tr {
   background: white !important;
 }
+/* Print/PDF ke time controls aur button ko 100% hide karne ke liye */
+@media print {
+  .controls,
+  .print-btn {
+    display: none !important;
+  }
+  .container {
+    padding: 10px !important;
+  }
+}
