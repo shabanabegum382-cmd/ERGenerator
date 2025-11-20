@@ -11,15 +11,15 @@ const STORES = [
 let entries = {};
 let lastStore = "";
 
-// Only these 12 dates will be Holiday in 2025
+// Only these dates are Holiday in 2025 (DD-MM)
 const FIXED_HOLIDAYS_2025 = [
-  "01-01", "14-03", "31-03", "18-04", "15-08", "27-08",
-  "05-09", "02-10", "20-10", "21-10", "01-11", "25-12"
+  "01-01","14-03","31-03","18-04","15-08","27-08",
+  "05-09","02-10","20-10","21-10","01-11","25-12"
 ];
 
 function isHoliday(dateStr) {
-  const [day, month, year] = dateStr.split("-");
-  const key = `${day.padStart(2,'0')}-${month}`;
+  const [d, m] = dateStr.split("-");
+  const key = `${d}-${m}`;
   return FIXED_HOLIDAYS_2025.includes(key);
 }
 
@@ -33,7 +33,7 @@ function getRandomStore() {
 // Mobile Modal
 function openMobileModal() {
   const monthYear = document.getElementById("monthYear").value;
-  if (!monthYear || !monthYear.includes("2025")) return alert("Only 2025 supported!");
+  if (!monthYear) return alert("Select Month & Year!");
 
   const [year, month] = monthYear.split("-");
   const days = new Date(year, month, 0).getDate();
@@ -74,7 +74,7 @@ function submitMobile() {
   renderTable();
 }
 
-// Other Expenses Modal
+// Other Expenses
 function openExpenseModal(type) {
   const monthYear = document.getElementById("monthYear").value;
   if (!monthYear) return alert("Select Month & Year!");
@@ -82,10 +82,11 @@ function openExpenseModal(type) {
   const [year, month] = monthYear.split("-");
   const days = new Date(year, month, 0).getDate();
 
-  const title = document.getElementById("modalTitle");
-  const body = document.getElementById("modalBody");
+  document.getElementById("modalTitle").textContent = 
+    type === 'meals' ? 'Add Meals ₹400' : 
+    type === 'hotel' ? 'Add Hotel Stay' : 'Add Courier';
 
-  title.textContent = type === 'meals' ? 'Add Meals ₹400' : type === 'hotel' ? 'Add Hotel Stay' : 'Add Courier';
+  const body = document.getElementById("modalBody");
   body.innerHTML = `
     <label>Date:</label>
     <select id="modalDateSelect">
@@ -98,8 +99,7 @@ function openExpenseModal(type) {
       }).join('')}
     </select>
     ${type === 'meals' ? '<input type="hidden" id="modalAmount" value="400" />' : 
-     type === 'hotel' ? '<label>Amount:</label><input type="number" id="modalAmount" value="1770" placeholder="1500 + tax" />' :
-     '<label>Amount:</label><input type="number" id="modalAmount" placeholder="e.g. 120" />'}
+      `<label>Amount:</label><input type="number" id="modalAmount" ${type==='hotel' ? 'value="1770"' : ''} placeholder="Enter amount" />`}
   `;
 
   document.getElementById("inputModal").style.display = "flex";
@@ -111,18 +111,18 @@ function closeModal() {
 
 function submitModal() {
   const dateStr = document.getElementById("modalDateSelect").value;
-  const amount = parseInt(document.getElementById("modalAmount").value) || 0;
   if (!dateStr) return alert("Select a date!");
+
+  const amount = document.getElementById("modalAmount") 
+    ? parseInt(document.getElementById("modalAmount").value) || 0 
+    : 400;
 
   if (!entries[dateStr]) entries[dateStr] = createDefaultEntry(dateStr);
 
-  if (document.getElementById("modalTitle").textContent.includes("Meals")) {
-    entries[dateStr].meals = 400;
-  } else if (document.getElementById("modalTitle").textContent.includes("Hotel")) {
-    entries[dateStr].hotel = amount;
-  } else {
-    entries[dateStr].courier = amount;
-  }
+  const title = document.getElementById("modalTitle").textContent;
+  if (title.includes("Meals")) entries[dateStr].meals = 400;
+  else if (title.includes("Hotel")) entries[dateStr].hotel = amount;
+  else entries[dateStr].courier = amount;
 
   closeModal();
   renderTable();
@@ -133,19 +133,18 @@ function createDefaultEntry(dateStr) {
   const dateObj = new Date(`20${y}`, m-1, d);
   const dayName = dateObj.toLocaleString('en-us', {weekday: 'short'});
   
-  const isHolidayDate = isHoliday(dateStr);
-  const isSunday = dayName === "Sun";
-  const isOff = isSunday || isHolidayDate;
+  const holiday = isHoliday(dateStr) || dayName === "Sun";
 
   return {
     date: dateStr,
-    day: isOff ? "Holiday" : dayName,
-    store: isOff ? "Holiday" : getRandomStore(),
-    daily: isOff ? 0 : 300,
+    day: holiday ? "Holiday" : dayName,
+    store: holiday ? "Holiday" : getRandomStore(),
+    daily: holiday ? 0 : 300,
     travel: 0, local: 0, fare: 0, meals: 0, hotel: 0, mobile: 0, courier: 0, others: 0
   };
 }
 
+// Generate ER
 function generateER() {
   const monthYear = document.getElementById("monthYear").value;
   if (!monthYear) return alert("Select Month & Year!");
@@ -160,7 +159,7 @@ function generateER() {
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${d.toString().padStart(2,'0')}-${month}-${year.slice(2)}`;
     entries[dateStr] = createDefaultEntry(dateStr);
-    if (entries[dateStr].daily > 0) workingDays++;
+    if (entries[dateStr].daily === 300) workingDays++;
   }
 
   document.getElementById("claimPeriod").value = `01-${monthName}-${year.slice(2)} to ${daysInMonth}-${monthName}-${year.slice(2)}`;
@@ -168,15 +167,14 @@ function generateER() {
   renderTable();
 }
 
+// Render Table
 function renderTable() {
-  const tbody = document.get hundreds.getElementById("tableBody");
+  const tbody = document.getElementById("tableBody");  // ← YEH LINE THIK KI HAI AB
   tbody.innerHTML = "";
 
   Object.keys(entries).sort().forEach(dateStr => {
     const e = entries[dateStr];
     const tr = document.createElement("tr");
-    // No red background for Holiday
-    // No yellow background in store column
 
     tr.innerHTML = `
       <td ondblclick="editCell('${dateStr}', 'date')">${e.date}</td>
@@ -196,24 +194,25 @@ function renderTable() {
     tbody.appendChild(tr);
   });
 
-  const totals = Object.values(entries).reduce((a, e) => ({
-    daily: a.daily + e.daily, travel: a.travel + e.travel, local: a.local + e.local,
-    fare: a.fare + e.fare, meals: a.meals + e.meals, hotel: a.hotel + e.hotel,
-    mobile: a.mobile + e.mobile, courier: a.courier + e.courier, others: a.others + e.others
-  }), {daily:0, travel:0, local:0, fare:0, meals:0, hotel:0, mobile:0, courier:0, others:0});
+  // Totals
+  const t = Object.values(entries).reduce((a, e) => ({
+    daily: a.daily + e.daily,
+    meals: a.meals + e.meals,
+    hotel: a.hotel + e.hotel,
+    mobile: a.mobile + e.mobile,
+    courier: a.courier + e.courier
+  }), {daily:0, meals:0, hotel:0, mobile:0, courier:0});
 
-  document.getElementById("tDaily").textContent = totals.daily;
-  document.getElementById("tMeals").textContent = totals.meals;
-  document.getElementById("tHotel").textContent = totals.hotel;
-  document.getElementById("tMobile").textContent = totals.mobile;
-  document.getElementById("tCourier").textContent = totals.courier;
+  document.getElementById("tDaily").textContent = t.daily;
+  document.getElementById("tMeals").textContent = t.meals;
+  document.getElementById("tHotel").textContent = t.hotel;
+  document.getElementById("tMobile").textContent = t.mobile;
+  document.getElementById("tCourier").textContent = t.courier;
 
-  const totalClaim = totals.daily + totals.mobile + totals.courier + totals.meals + totals.hotel;
-  document.getElementById("totalClaim").textContent = totalClaim;
+  document.getElementById("totalClaim").textContent = t.daily + t.meals + t.hotel + t.mobile + t.courier;
 }
 
 function editCell(dateStr, field) {
-  if (!entries[dateStr]) return;
   const current = entries[dateStr][field];
   const value = prompt(`Edit ${field}:`, current);
   if (value !== null) {
@@ -223,28 +222,16 @@ function editCell(dateStr, field) {
 }
 
 function downloadPDF() {
-  const controls = document.querySelector('.controls');
-  const btn = document.querySelector('.print-btn');
-  const modals = document.querySelectorAll('.modal');
-
-  controls.style.display = 'none';
-  btn.style.display = 'none';
-  modals.forEach(m => m.style.display = 'none');
-
   const opt = {
-    margin: [0.05, 0.05, 0.05, 0.05],
+    margin: 0.05,
     filename: `ER_${document.getElementById('empName').value.replace(/ /g, '_')}_${document.getElementById('monthYear').value}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2.2, useCORS: true, letterRendering: true },
+    html2canvas: { scale: 2.2 },
     jsPDF: { unit: 'in', format: [10.8, 7.8], orientation: 'landscape' }
   };
-
-  html2pdf().set(opt).from(document.querySelector('.container')).save().then(() => {
-    controls.style.display = 'flex';
-    btn.style.display = 'block';
-  });
+  html2pdf().set(opt).from(document.querySelector('.container')).save();
 }
 
 window.onload = () => {
-  document.getElementById("monthYear").value = "2025-10";
+  document.getElementById("monthYear").value = "2025-11";
 };
