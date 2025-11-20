@@ -1,36 +1,26 @@
 const STORES = [
-"SHOPPERS STOP - L&T MALL, HYD","HEALTH & GLOW - ALKAPURI, HYD","HEALTH & GLOW-TOWLICHOWKI,HYD",
-"HEALTH & GLOW-INORBIT MALL,HDY","BEAUTY & BEYOND - GSM MALL, HYD","HEALTH & GLOW - NIZAMPET , HYD",
-"HEALTH & GLOW - GVK MALL, HYD","HEALTH & GLOW - GSM MALL, HYD","HEALTH & GLOW - SUJANA FORUM MALL, HYD",
-"LIFESTYLE - CYBERABAD , HYD","NYKAA ON TREND - BANJARA HILLS, HYD","SHOPPERS STOP - GVK ROAD , HYD",
-"SHOPPERS STOP-INORBIT MALL,HYD","CENTRO - KUKATPALLY, HYD","HEALTH & GLOW - BANJARA HILLS, HYD",
-"KATHIAVAR - JUBILEE HILLS, HYD","KATHIAWAR - GACHIBOWLI, HYD","GOWTHAM ENTERPRISES - YOUSUFGUDA, HYD",
-"SREEJA COSMETICS - AMEERPET, HYD"
+  "SHOPPERS STOP - L&T MALL, HYD","HEALTH & GLOW - ALKAPURI, HYD","HEALTH & GLOW-TOWLICHOWKI,HYD",
+  "HEALTH & GLOW-INORBIT MALL,HDY","BEAUTY & BEYOND - GSM MALL, HYD","HEALTH & GLOW - NIZAMPET , HYD",
+  "HEALTH & GLOW - GVK MALL, HYD","HEALTH & GLOW - GSM MALL, HYD","HEALTH & GLOW - SUJANA FORUM MALL, HYD",
+  "LIFESTYLE - CYBERABAD , HYD","NYKAA ON TREND - BANJARA HILLS, HYD","SHOPPERS STOP - GVK ROAD , HYD",
+  "SHOPPERS STOP-INORBIT MALL,HYD","CENTRO - KUKATPALLY, HYD","HEALTH & GLOW - BANJARA HILLS, HYD",
+  "KATHIAVAR - JUBILEE HILLS, HYD","KATHIAWAR - GACHIBOWLI, HYD","GOWTHAM ENTERPRISES - YOUSUFGUDA, HYD",
+  "SREEJA COSMETICS - AMEERPET, HYD"
 ];
 
 let entries = {};
 let lastStore = "";
 
-// Festival Holidays (Month-Day)
-const FESTIVAL_HOLIDAYS = {
-  "01-01": "Happy New Year",
-  "03-25": "Holi",           // Approx, changes yearly
-  "04-18": "Good Friday",    // 2025
-  "04-10": "Eid Ul Fitr",    // Approx
-  "08-15": "Independence Day",
-  "09-07": "Ganesh Chaturthi", // Approx
-  "09-16": "Eid e Milad",     // Approx
-  "10-02": "Gandhi Jayanti",
-  "10-31": "Diwali",          // Approx
-  "11-01": "Diwali/Govardhan Puja",
-  "11-01": "Karnataka Day",
-  "12-25": "Christmas Day"
-};
+// Only these 12 dates will be Holiday in 2025
+const FIXED_HOLIDAYS_2025 = [
+  "01-01", "14-03", "31-03", "18-04", "15-08", "27-08",
+  "05-09", "02-10", "20-10", "21-10", "01-11", "25-12"
+];
 
-function isFestival(dateStr) {  // dateStr = "DD-MM-YYYY"
-  const [day, month] = dateStr.split("-");
-  const key = `${month}-${day}`;
-  return FESTIVAL_HOLIDAYS[key];
+function isHoliday(dateStr) {
+  const [day, month, year] = dateStr.split("-");
+  const key = `${day.padStart(2,'0')}-${month}`;
+  return FIXED_HOLIDAYS_2025.includes(key);
 }
 
 function getRandomStore() {
@@ -43,23 +33,23 @@ function getRandomStore() {
 // Mobile Modal
 function openMobileModal() {
   const monthYear = document.getElementById("monthYear").value;
-  if (!monthYear) return alert("Select Month & Year!");
+  if (!monthYear || !monthYear.includes("2025")) return alert("Only 2025 supported!");
 
   const [year, month] = monthYear.split("-");
   const days = new Date(year, month, 0).getDate();
   const select = document.getElementById("mobileDate");
-  select.innerHTML = "";
+  select.innerHTML = "<option value=''>-- Select Date --</option>";
 
   for (let d = 1; d <= days; d++) {
     const dateStr = `${d.toString().padStart(2,'0')}-${month}-${year.slice(2)}`;
     const opt = document.createElement("option");
     opt.value = dateStr;
     opt.textContent = dateStr;
-    if (entries[dateStr] && entries[dateStr].day === "Week Off") opt.disabled = true;
+    if (entries[dateStr] && entries[dateStr].day === "Holiday") opt.disabled = true;
     select.appendChild(opt);
   }
 
-  const used = Object.values(entries).reduce((a, e) => a + e.mobile, 0);
+  const used = Object.values(entries).reduce((a, e) => a + (e.mobile || 0), 0);
   document.getElementById("mobileRemaining").textContent = 1500 - used;
   document.getElementById("mobileModal").style.display = "flex";
 }
@@ -73,8 +63,9 @@ function submitMobile() {
   const amount = parseInt(document.getElementById("mobileAmount").value) || 0;
   if (!dateStr || amount <= 0) return alert("Enter valid amount!");
 
-  const totalUsed = Object.values(entries).reduce((a, e) => a + e.mobile, 0) - (entries[dateStr]?.mobile || 0);
-  if (totalUsed + amount > 1500) return alert(`Max ₹1500 allowed! Remaining: ₹${1500 - totalUsed}`);
+  const used = Object.values(entries).reduce((a, e) => a + (e.mobile || 0), 0);
+  const current = entries[dateStr]?.mobile || 0;
+  if (used - current + amount > 1500) return alert(`Max ₹1500! Remaining: ₹${1500 - (used - current)}`);
 
   if (!entries[dateStr]) entries[dateStr] = createDefaultEntry(dateStr);
   entries[dateStr].mobile = amount;
@@ -91,7 +82,6 @@ function openExpenseModal(type) {
   const [year, month] = monthYear.split("-");
   const days = new Date(year, month, 0).getDate();
 
-  const modal = document.getElementById("inputModal");
   const title = document.getElementById("modalTitle");
   const body = document.getElementById("modalBody");
 
@@ -99,10 +89,11 @@ function openExpenseModal(type) {
   body.innerHTML = `
     <label>Date:</label>
     <select id="modalDateSelect">
+      <option value="">-- Select Date --</option>
       ${Array.from({length: days}, (_, i) => {
         const d = i+1;
         const dateStr = `${d.toString().padStart(2,'0')}-${month}-${year.slice(2)}`;
-        const disabled = entries[dateStr]?.day === "Week Off" ? "disabled" : "";
+        const disabled = entries[dateStr]?.day === "Holiday" ? "disabled" : "";
         return `<option value="${dateStr}" ${disabled}>${dateStr}</option>`;
       }).join('')}
     </select>
@@ -111,7 +102,7 @@ function openExpenseModal(type) {
      '<label>Amount:</label><input type="number" id="modalAmount" placeholder="e.g. 120" />'}
   `;
 
-  modal.style.display = "flex";
+  document.getElementById("inputModal").style.display = "flex";
 }
 
 function closeModal() {
@@ -121,6 +112,7 @@ function closeModal() {
 function submitModal() {
   const dateStr = document.getElementById("modalDateSelect").value;
   const amount = parseInt(document.getElementById("modalAmount").value) || 0;
+  if (!dateStr) return alert("Select a date!");
 
   if (!entries[dateStr]) entries[dateStr] = createDefaultEntry(dateStr);
 
@@ -140,19 +132,23 @@ function createDefaultEntry(dateStr) {
   const [d, m, y] = dateStr.split("-");
   const dateObj = new Date(`20${y}`, m-1, d);
   const dayName = dateObj.toLocaleString('en-us', {weekday: 'short'});
+  
+  const isHolidayDate = isHoliday(dateStr);
+  const isSunday = dayName === "Sun";
+  const isOff = isSunday || isHolidayDate;
+
   return {
     date: dateStr,
-    day: dayName === "Sun" || isFestival(dateStr) ? "Week Off" : dayName,
-    store: dayName === "Sun" || isFestival(dateStr) ? (isFestival(dateStr) || "Week Off") : getRandomStore(),
-    daily: dayName === "Sun" || isFestival(dateStr) ? 0 : 300,
+    day: isOff ? "Holiday" : dayName,
+    store: isOff ? "Holiday" : getRandomStore(),
+    daily: isOff ? 0 : 300,
     travel: 0, local: 0, fare: 0, meals: 0, hotel: 0, mobile: 0, courier: 0, others: 0
   };
 }
 
-// Generate ER
 function generateER() {
   const monthYear = document.getElementById("monthYear").value;
-  if (!monthYear) return alert("Select Month!");
+  if (!monthYear) return alert("Select Month & Year!");
 
   const [year, month] = monthYear.split("-");
   const daysInMonth = new Date(year, month, 0).getDate();
@@ -172,20 +168,20 @@ function generateER() {
   renderTable();
 }
 
-// Render Table + Editable
 function renderTable() {
-  const tbody = document.getElementById("tableBody");
+  const tbody = document.get hundreds.getElementById("tableBody");
   tbody.innerHTML = "";
 
   Object.keys(entries).sort().forEach(dateStr => {
     const e = entries[dateStr];
     const tr = document.createElement("tr");
-    if (e.day === "Week Off") tr.classList.add("weekoff");
+    // No red background for Holiday
+    // No yellow background in store column
 
     tr.innerHTML = `
       <td ondblclick="editCell('${dateStr}', 'date')">${e.date}</td>
-      <td>${e.day}</td>
-      <td ondblclick="editCell('${dateStr}', 'store')" class="editable">${e.store}</td>
+      <td ondblclick="editCell('${dateStr}', 'day')">${e.day}</td>
+      <td ondblclick="editCell('${dateStr}', 'store')">${e.store}</td>
       <td></td>
       <td ondblclick="editCell('${dateStr}', 'daily')">${e.daily}</td>
       <td ondblclick="editCell('${dateStr}', 'travel')">${e.travel}</td>
@@ -216,17 +212,25 @@ function renderTable() {
   document.getElementById("totalClaim").textContent = totalClaim;
 }
 
-// Double click edit
 function editCell(dateStr, field) {
-  if (field === "date") return;
-  const value = prompt(`Edit ${field}`, entries[dateStr][field]);
+  if (!entries[dateStr]) return;
+  const current = entries[dateStr][field];
+  const value = prompt(`Edit ${field}:`, current);
   if (value !== null) {
-    entries[dateStr][field] = isNaN(value) ? value : parseInt(value) || 0;
+    entries[dateStr][field] = isNaN(value) ? value.trim() : parseInt(value) || 0;
     renderTable();
   }
 }
 
 function downloadPDF() {
+  const controls = document.querySelector('.controls');
+  const btn = document.querySelector('.print-btn');
+  const modals = document.querySelectorAll('.modal');
+
+  controls.style.display = 'none';
+  btn.style.display = 'none';
+  modals.forEach(m => m.style.display = 'none');
+
   const opt = {
     margin: [0.05, 0.05, 0.05, 0.05],
     filename: `ER_${document.getElementById('empName').value.replace(/ /g, '_')}_${document.getElementById('monthYear').value}.pdf`,
@@ -234,9 +238,13 @@ function downloadPDF() {
     html2canvas: { scale: 2.2, useCORS: true, letterRendering: true },
     jsPDF: { unit: 'in', format: [10.8, 7.8], orientation: 'landscape' }
   };
-  html2pdf().set(opt).from(document.querySelector('.container')).save();
+
+  html2pdf().set(opt).from(document.querySelector('.container')).save().then(() => {
+    controls.style.display = 'flex';
+    btn.style.display = 'block';
+  });
 }
 
 window.onload = () => {
-  document.getElementById("monthYear").value = "2025-11";
+  document.getElementById("monthYear").value = "2025-10";
 };
