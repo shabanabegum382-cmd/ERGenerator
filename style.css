@@ -241,3 +241,48 @@ tbody tr:nth-child(even) {
     font-size: 8.5px !important;
   }
 }
+
+/* ... keep all your existing CSS ... */
+
+/* New Mobile Modal Styling */
+.mobile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 15px 0;
+}
+
+.mobile-form label {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.mobile-form select,
+.mobile-form input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.mobile-form small {
+  color: #15803d;
+  font-weight: bold;
+}
+
+/* Editable cells */
+.editable {
+  cursor: pointer;
+  background: #fffbe6 !important;
+}
+
+.editable:hover {
+  background: #fff3cd !important;
+}
+
+/* Weekoff style */
+.weekoff {
+  background: #fee2e2 !important;
+  color: #991b1b;
+  font-weight: bold;
+}
