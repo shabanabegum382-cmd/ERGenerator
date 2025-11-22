@@ -98,15 +98,15 @@ function renderTable() {
       <td ondblclick="editCell('${dateStr}', 'day')">${e.day}</td>
       <td ondblclick="editCell('${dateStr}', 'store')">${e.store}</td>
       <td></td>
-      <td ondblclick="editCell('${dateStr}', 'daily')">${e.daily}</td>
-      <td ondblclick="editCell('${dateStr}', 'travel')">${e.travel}</td>
-      <td ondblclick="editCell('${dateStr}', 'local')">${e.local}</td>
-      <td ondblclick="editCell('${dateStr}', 'fare')">${e.fare}</td>
-      <td ondblclick="editCell('${dateStr}', 'meals')">${e.meals}</td>
-      <td ondblclick="editCell('${dateStr}', 'hotel')">${e.hotel}</td>
-      <td ondblclick="editCell('${dateStr}', 'mobile')">${e.mobile}</td>
-      <td ondblclick="editCell('${dateStr}', 'courier')">${e.courier}</td>
-      <td ondblclick="editCell('${dateStr}', 'others')">${e.others}</td>
+      <td ondblclick="editCell('${dateStr}', 'daily')">${e.daily > 0 ? e.daily : ''}</td>
+      <td ondblclick="editCell('${dateStr}', 'travel')">${e.travel > 0 ? e.travel : ''}</td>
+      <td ondblclick="editCell('${dateStr}', 'local')">${e.local > 0 ? e.local : ''}</td>
+      <td ondblclick="editCell('${dateStr}', 'fare')">${e.fare > 0 ? e.fare : ''}</td>
+      <td ondblclick="editCell('${dateStr}', 'meals')">${e.meals > 0 ? e.meals : ''}</td>
+      <td ondblclick="editCell('${dateStr}', 'hotel')">${e.hotel > 0 ? e.hotel : ''}</td>
+      <td ondblclick="editCell('${dateStr}', 'mobile')">${e.mobile > 0 ? e.mobile : ''}</td>
+      <td ondblclick="editCell('${dateStr}', 'courier')">${e.courier > 0 ? e.courier : ''}</td>
+      <td ondblclick="editCell('${dateStr}', 'others')">${e.others > 0 ? e.others : ''}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -119,11 +119,11 @@ function renderTable() {
     courier: a.courier + e.courier
   }), { daily: 0, meals: 0, hotel: 0, mobile: 0, courier: 0 });
 
-  document.getElementById("tDaily").textContent = t.daily;
-  document.getElementById("tMeals").textContent = t.meals;
-  document.getElementById("tHotel").textContent = t.hotel;
-  document.getElementById("tMobile").textContent = t.mobile;
-  document.getElementById("tCourier").textContent = t.courier;
+  document.getElementById("tDaily").textContent = t.daily > 0 ? t.daily : '';
+  document.getElementById("tMeals").textContent = t.meals > 0 ? t.meals : '';
+  document.getElementById("tHotel").textContent = t.hotel > 0 ? t.hotel : '';
+  document.getElementById("tMobile").textContent = t.mobile > 0 ? t.mobile : '';
+  document.getElementById("tCourier").textContent = t.courier > 0 ? t.courier : '';
   document.getElementById("totalClaim").textContent = t.daily + t.meals + t.hotel + t.mobile + t.courier;
 }
 
