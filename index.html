@@ -2,56 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Teamlease ER Generator</title>
+  <meta name="viewport" content="width=device OCC-width, initial-scale=1.0"/>
+  <title>ER Generator</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
   <div class="container">
-    <div class="company-header">
+    <div class="header">
       <h2>Teamlease - Travel Expenses Statement</h2>
-      <p class="address">3115 Work Avenue Campus, Ascent Building 77, Jyoti Nivas College Rd, Koramangala Industrial Layout, Koramangala, Bengaluru, Karnataka 560095</p>
+      <p>3115 Work Avenue Campus, Ascent Building 77, Jyoti Nivas College Rd, Koramangala Industrial Layout, Koramangala, Bengaluru, Karnataka 560095</p>
     </div>
 
     <table class="info-table">
-      <tr>
-        <td><strong>Employee ID:-</strong></td>
-        <td><input type="text" id="empId" value="874786" /></td>
-        <td><strong>Designation</strong></td>
-        <td><input type="text" id="designation" value="SUPERVISOR" /></td>
-      </tr>
-      <tr>
-        <td><strong>Employee Name</strong></td>
-        <td><input type="text" id="empName" value="SHABANA BEGUM" /></td>
-        <td><strong>Claim Period</strong></td>
-        <td><input type="text" id="claimPeriod" value="01-Nov-25 to 30-Nov-25" /></td>
-      </tr>
-      <tr>
-        <td><strong>HQ Town</strong></td>
-        <td><input type="text" id="hqTown" value="HYDERABAD" /></td>
-        <td><strong>Working days</strong></td>
-        <td><input type="text" id="workingDays" value="25" /></td>
-      </tr>
-      <tr>
-        <td><strong>Total Claim Amount</strong></td>
-        <td id="totalClaim">7500</td>
-        <td><strong>Authorized Sign</strong></td>
-        <td></td>
-      </tr>
+      <tr><td>Employee ID:</td><td><input type="text" id="empId" value="874786"/></td><td>Designation</td><td><input type="text" value="SUPERVISOR" readonly/></td></tr>
+      <tr><td>Employee Name</td><td><input type="text" id="empName" value="SHABANA BEGUM"/></td><td>Claim Period</td><td><input type="text" id="claimPeriod" readonly/></td></tr>
+      <tr><td>HQ Town</td><td><input type="text" value="HYDERABAD" readonly/></td><td>Working days</td><td><input type="text" id="workingDays" readonly/></td></tr>
+      <tr><td>Total Claim Amount</td><td><input type="text" id="totalClaim" readonly value="7200"/></td><td>Authorized Sign</td><td></td></tr>
     </table>
 
     <div class="controls">
-      <label>Month & Year: <input type="month" id="monthYear" value="2025-11" /></label>
+      <label>Month & Year:</label>
+      <input type="month" id="monthYear" value="2025-11"/>
       <button onclick="openMobileModal()">+ Mobile Expense (₹1500)</button>
       <button onclick="openExpenseModal('courier')">+ Courier</button>
       <button onclick="openExpenseModal('meals')">+ Meals ₹400</button>
       <button onclick="openExpenseModal('hotel')">+ Hotel Stay</button>
-      <button onclick="generateER()" class="generate-btn">Generate ER</button>
+      <button class="generate-btn" onclick="generateER()">Generate ER</button>
     </div>
 
     <table id="erTable" class="main-table">
       <thead>
+        <!-- TOTAL ROW - SABSE UPAR -->
+        <tr class="total-header">
+          <th colspan="4">Total</th>
+          <th id="tDaily">0</th>
+          <th id="tTravel">0</th>
+          <th id="tLocal">0</th>
+          <th id="tFare">0</th>
+          <th id="tMeals">0</th>
+          <th id="tHotel">0</th>
+          <th id="tMobile">0</th>
+          <th id="tCourier">0</th>
+          <th id="tOthers">0</th>
+        </tr>
+
         <tr>
           <th>Date</th>
           <th>Day</th>
@@ -67,58 +62,37 @@
           <th>Courier</th>
           <th>Activity/Others</th>
         </tr>
-        <tr class="total-row">
-          <th colspan="4">Total</th>
-          <td id="tDaily">0</td>
-          <td id="tTravel">0</td>
-          <td id="tLocal">0</td>
-          <td id="tFare">0</td>
-          <td id="tMeals">0</td>
-          <td id="tHotel">0</td>
-          <td id="tMobile">0</td>
-          <td id="tCourier">0</td>
-          <td id="tOthers">0</td>
-        </tr>
       </thead>
       <tbody id="tableBody"></tbody>
     </table>
 
-    <div class="declaration-wrapper">
-      <p class="declaration">
-        I Certify that these expenses are correctly Stated and were Incurred as Necessary business expenses in the service of the company only
-      </p>
+    <div class="declaration">
+      <p>I Certify that these expenses are correctly stated and were incurred as Necessary business expenses in the service of the company only</p>
     </div>
 
-    <button onclick="downloadPDF()" class="print-btn">Download PDF</button>
+    <button class="print-btn" onclick="downloadPDF()">Download PDF</button>
   </div>
 
-  <!-- Mobile Modal -->
+  <!-- Modals -->
   <div id="mobileModal" class="modal">
     <div class="modal-content">
+      <span class="close" onclick="closeMobileModal()">×</span>
       <h3>Add Mobile Expense</h3>
-      <div class="mobile-form">
-        <label>Date:</label>
-        <select id="mobileDate"></select>
-        <label>Amount (Max ₹1500):</label>
-        <input type="number" id="mobileAmount" min="1" max="1500" placeholder="Enter amount" />
-        <small>Remaining: ₹<span id="mobileRemaining">1500</span></small>
-      </div>
-      <div class="modal-actions">
-        <button onclick="closeMobileModal()" class="btn-cancel">Cancel</button>
-        <button onclick="submitMobile()" class="btn-ok">Add Expense</button>
-      </div>
+      <label>Date:</label>
+      <select id="mobileDate"></select>
+      <label>Amount:</label>
+      <input type="number" id="mobileAmount" min="1" max="1500"/>
+      <p>Remaining: ₹<span id="mobileRemaining">1500</span></p>
+      <button onclick="submitMobile()">Add</button>
     </div>
   </div>
 
-  <!-- Other Expense Modal -->
   <div id="inputModal" class="modal">
     <div class="modal-content">
-      <h3 id="modalTitle">Add Expense</h3>
+      <span class="close" onclick="closeModal()">×</span>
+      <h3 id="modalTitle"></h3>
       <div id="modalBody"></div>
-      <div class="modal-actions">
-        <button onclick="closeModal()" class="btn-cancel">Cancel</button>
-        <button onclick="submitModal()" class="btn-ok">OK</button>
-      </div>
+      <button onclick="submitModal()">Add</button>
     </div>
   </div>
 
